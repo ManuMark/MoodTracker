@@ -1,12 +1,15 @@
 package com.manum.android.moodtracker.Controllers.Activities;
 
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.EditText;
 
 import com.manum.android.moodtracker.Adapters.MyAdapter;
 import com.manum.android.moodtracker.Controllers.Fragments.MainFragment;
@@ -20,8 +23,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
     private int mCurrentPosition;
     private SharedPreferences mPreferences;
     private VerticalViewPager mPager;
+    private String mComment;
 
     public static final String PREF_KEY_POSITION = "PREF_KEY_POSITION";
+    public static final String PREF_KEY_COMMENT = "PREF_KEY_COMMENT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +45,9 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         mMoods[3] = new Mood("Happy");
         mMoods[4] = new Mood("Very Happy");
 
-        // Get last mood displayed
+        // Get the preferences
         mCurrentPosition = mPreferences.getInt(PREF_KEY_POSITION, 3);
+        mComment = mPreferences.getString(PREF_KEY_COMMENT, "No comment");
 
         this.configureViewPager();
     }
@@ -65,14 +71,42 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
     public void onButtonClicked(View v) {
 
         int btnTag = Integer.parseInt(v.getTag().toString());
-        // Open history activity
+        // Start history activity
         if (btnTag == 20) {
             Intent i = new Intent(this, HistoryActivity.class);
             startActivity(i);
-        // Display Toast
+        // Display dialog popup
         } else {
-            Toast.makeText(this, "Bouton commentary cliqué", Toast.LENGTH_SHORT).show();
+            dialogPopup();
         }
 
+    }
+
+    // Create popup to add comment about the mood of the day
+    private void dialogPopup() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Commentaire");
+
+        // Set up the input
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("Valider", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int i) {
+                mComment = input.getText().toString();
+                mPreferences.edit().putString(PREF_KEY_COMMENT, mComment).apply();
+            }
+        });
+        builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int i) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
     }
 }
