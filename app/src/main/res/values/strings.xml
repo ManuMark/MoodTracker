@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">MoodTracker</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="image_mood_description">Mood of the day</string>
+    <string name="history_btn_description">History button</string>
+    <string name="note_add_btn">Note add button</string>
+</resources>
