@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.manum.android.moodtracker.Adapters.MyAdapter;
 import com.manum.android.moodtracker.Controllers.Fragments.MainFragment;
@@ -17,16 +18,27 @@ import com.manum.android.moodtracker.Models.Mood;
 import com.manum.android.moodtracker.R;
 import com.manum.android.moodtracker.Adapters.VerticalViewPager;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
 public class MainActivity extends AppCompatActivity implements MainFragment.OnButtonClickedListener {
 
     private Mood[] mMoods;
     private int mCurrentPosition;
+    private String mCurrentDate;
+    private String mStringDate;
     private SharedPreferences mPreferences;
     private VerticalViewPager mPager;
     private String mComment;
+    private Calendar mCalendar;
+    private SimpleDateFormat mSimpleDateFormat;
 
     public static final String PREF_KEY_POSITION = "PREF_KEY_POSITION";
     public static final String PREF_KEY_COMMENT = "PREF_KEY_COMMENT";
+    public static final String PREF_KEY_DATE = "PREF_KEY_DATE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +47,15 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
 
         mPreferences = getPreferences(MODE_PRIVATE);
 
-        mPager = findViewById(R.id.viewpager);
+        // If day has changed, store the last mood into history list and show default settings
+        if(compareDates()) {
+            mCurrentPosition = mPreferences.getInt(PREF_KEY_POSITION, 3);
+            mComment = mPreferences.getString(PREF_KEY_COMMENT, "No comment");
+        } else {
+            if (!mStringDate.equals("No date")){ addMoodToHistoryList(); }
+            mCurrentPosition = 3;
+            mComment = "";
+        }
 
         // Create Mood[]
         mMoods = new Mood[5];
@@ -45,17 +65,16 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         mMoods[3] = new Mood("Happy");
         mMoods[4] = new Mood("Very Happy");
 
-        // Get the preferences
-        mCurrentPosition = mPreferences.getInt(PREF_KEY_POSITION, 3);
-        mComment = mPreferences.getString(PREF_KEY_COMMENT, "No comment");
-
+        // Configure pager and adapter
+        mPager = findViewById(R.id.viewpager);
         this.configureViewPager();
     }
 
-    // Save current mood when activity is onStop()
+    // Save current mood and date when activity is onStop()
     @Override
     protected void onStop() {
         super.onStop();
+
         int mSavedPosition = mPager.getCurrentItem();
         mPreferences.edit().putInt(PREF_KEY_POSITION, mSavedPosition).apply();
     }
@@ -71,12 +90,13 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
     public void onButtonClicked(View v) {
 
         int btnTag = Integer.parseInt(v.getTag().toString());
-        // Start history activity
+
         if (btnTag == 20) {
+            // Start history activity
             Intent i = new Intent(this, HistoryActivity.class);
             startActivity(i);
-        // Display dialog popup
         } else {
+            // Display dialog popup
             dialogPopup();
         }
 
@@ -91,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         // Set up the input
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setText(mComment);
         builder.setView(input);
 
         // Set up the buttons
@@ -109,4 +130,24 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         });
         builder.show();
     }
+
+    // Compare date stored in preferences and current date
+    private boolean compareDates() {
+
+        mStringDate = mPreferences.getString(PREF_KEY_DATE, "No date");
+
+        mCalendar = Calendar.getInstance();
+        mSimpleDateFormat = new SimpleDateFormat("yyyy/MM/dd", Locale.FRANCE);
+        mCurrentDate = mSimpleDateFormat.format(mCalendar.getTime());
+
+        mPreferences.edit().putString(PREF_KEY_DATE, mCurrentDate).apply();
+
+        return mStringDate.equals((mCurrentDate));
+    }
+
+    // Add last mood to the history list
+    private void addMoodToHistoryList() {
+
+    }
+
 }
