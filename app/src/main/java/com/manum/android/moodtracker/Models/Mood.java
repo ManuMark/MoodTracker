@@ -6,12 +6,25 @@ package com.manum.android.moodtracker.Models;
 public class Mood {
 
     private String name;
+    private String comment;
 
-    public Mood(String name) {
+    public Mood(String name, String comment) {
+
         this.name = name;
+        this.comment = comment;
     }
 
     public String getName() {
         return name;
     }
+
+    public String getComment() {
+
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
 }

@@ -6,4 +6,7 @@
     <string name="image_mood_description">Mood of the day</string>
     <string name="history_btn_description">History button</string>
     <string name="note_add_btn">Note add button</string>
+    <string name="check_note_btn">Check add button</string>
+    <string name="share_btn">Share Button</string>
+    <string name="date_de_l_humeur">Date de l\'humeur</string>
 </resources>

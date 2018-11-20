@@ -8,6 +8,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -20,13 +21,16 @@ import com.manum.android.moodtracker.Adapters.VerticalViewPager;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements MainFragment.OnButtonClickedListener {
 
     private Mood[] mMoods;
+    private Mood[] mSavedMoods;
     private int mCurrentPosition;
     private String mCurrentDate;
     private String mStringDate;
@@ -45,25 +49,33 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Create Mood[]
+        mMoods = new Mood[5];
+        mMoods[0] = new Mood("Sad", "");
+        mMoods[1] = new Mood("Disappointed", "");
+        mMoods[2] = new Mood("Normal", "");
+        mMoods[3] = new Mood("Happy", "");
+        mMoods[4] = new Mood("Very Happy","");
+
         mPreferences = getPreferences(MODE_PRIVATE);
 
+
         // If day has changed, store the last mood into history list and show default settings
-        if(compareDates()) {
+        /*if(compareDates()) {
             mCurrentPosition = mPreferences.getInt(PREF_KEY_POSITION, 3);
             mComment = mPreferences.getString(PREF_KEY_COMMENT, "No comment");
         } else {
             if (!mStringDate.equals("No date")){ addMoodToHistoryList(); }
             mCurrentPosition = 3;
             mComment = "";
+        }*/
+        mCurrentPosition = mPreferences.getInt(PREF_KEY_POSITION, 3);
+        mComment = mPreferences.getString(PREF_KEY_COMMENT, "No comment");
+        if (!compareDates()) {
+            if (!mStringDate.equals("No date")) {addMoodToHistoryList();}
+            mCurrentPosition = 3;
+            mComment = "";
         }
-
-        // Create Mood[]
-        mMoods = new Mood[5];
-        mMoods[0] = new Mood("Sad");
-        mMoods[1] = new Mood("Disappointed");
-        mMoods[2] = new Mood("Normal");
-        mMoods[3] = new Mood("Happy");
-        mMoods[4] = new Mood("Very Happy");
 
         // Configure pager and adapter
         mPager = findViewById(R.id.viewpager);
@@ -77,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
 
         int mSavedPosition = mPager.getCurrentItem();
         mPreferences.edit().putInt(PREF_KEY_POSITION, mSavedPosition).apply();
+        mPreferences.edit().putString(PREF_KEY_COMMENT, mComment).apply();
     }
 
     // Configure VerticalViewPager to display main app screen
@@ -91,13 +104,22 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
 
         int btnTag = Integer.parseInt(v.getTag().toString());
 
-        if (btnTag == 20) {
+        if (btnTag == 10) {
+            // Display dialog popup
+            dialogPopup();
+        }
+        else if (btnTag == 20) {
             // Start history activity
             Intent i = new Intent(this, HistoryActivity.class);
             startActivity(i);
         } else {
-            // Display dialog popup
-            dialogPopup();
+            // Share mood with somebody
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("text/plain");
+            String shareBody = "Today, I'm in a "+ mMoods[mCurrentPosition].getName() +" mood.";
+            i.putExtra(Intent.EXTRA_SUBJECT, "Mood of the Day");
+            i.putExtra(Intent.EXTRA_TEXT, shareBody);
+            startActivity(Intent.createChooser(i, "Share via"));
         }
 
     }
@@ -119,7 +141,6 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
             @Override
             public void onClick(DialogInterface dialog, int i) {
                 mComment = input.getText().toString();
-                mPreferences.edit().putString(PREF_KEY_COMMENT, mComment).apply();
             }
         });
         builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
@@ -147,6 +168,13 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
 
     // Add last mood to the history list
     private void addMoodToHistoryList() {
+
+         Mood currentMood = new Mood(mMoods[mCurrentPosition].getName(), mComment);
+
+        List<Mood> moodList = new ArrayList<>();
+        moodList.add(currentMood);
+
+
 
     }
 

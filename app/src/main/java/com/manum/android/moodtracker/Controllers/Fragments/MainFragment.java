@@ -66,6 +66,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         }
         v.findViewById(R.id.note_add_btn).setOnClickListener(this);
         v.findViewById(R.id.history_btn).setOnClickListener(this);
+        v.findViewById(R.id.share_btn).setOnClickListener(this);
         return v;
     }
 
