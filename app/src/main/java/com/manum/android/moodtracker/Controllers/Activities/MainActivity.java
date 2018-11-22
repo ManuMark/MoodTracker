@@ -13,12 +13,15 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.manum.android.moodtracker.Adapters.MyAdapter;
 import com.manum.android.moodtracker.Controllers.Fragments.MainFragment;
 import com.manum.android.moodtracker.Models.Mood;
 import com.manum.android.moodtracker.R;
 import com.manum.android.moodtracker.Adapters.VerticalViewPager;
 
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -30,7 +33,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements MainFragment.OnButtonClickedListener {
 
     private Mood[] mMoods;
-    private Mood[] mSavedMoods;
+    private List<Mood> mSavedMoods;
     private int mCurrentPosition;
     private String mCurrentDate;
     private String mStringDate;
@@ -43,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
     public static final String PREF_KEY_POSITION = "PREF_KEY_POSITION";
     public static final String PREF_KEY_COMMENT = "PREF_KEY_COMMENT";
     public static final String PREF_KEY_DATE = "PREF_KEY_DATE";
+    public static final String PREF_KEY_LIST = "PREF_KEY_LIST";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,12 +173,23 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
     // Add last mood to the history list
     private void addMoodToHistoryList() {
 
-         Mood currentMood = new Mood(mMoods[mCurrentPosition].getName(), mComment);
+        Mood currentMood = new Mood(mMoods[mCurrentPosition].getName(), mComment);
 
-        List<Mood> moodList = new ArrayList<>();
-        moodList.add(currentMood);
+        String strList = mPreferences.getString(PREF_KEY_LIST, "");
+        Type listType = new TypeToken<ArrayList<Mood>>(){}.getType();
 
+        if (strList.isEmpty()) {mSavedMoods = new ArrayList<>(7);}
+        else { mSavedMoods = new Gson().fromJson(strList, listType); }
 
+        mSavedMoods.add(currentMood);
+
+        if (mSavedMoods.size()>7){
+            mSavedMoods.remove(0);
+        }
+
+        String listStr = new Gson().toJson(mSavedMoods, listType);
+
+        mPreferences.edit().putString(PREF_KEY_LIST, listStr).apply();
 
     }
 
