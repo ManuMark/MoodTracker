@@ -82,16 +82,6 @@ public class HistoryAdapter extends BaseAdapter {
         itemLine = view.findViewById(R.id.item_line);
         ImageButton showCommentbtn = view.findViewById(R.id.item_icon);
 
-        if (itemComment.isEmpty()) { showCommentbtn.setVisibility(View.INVISIBLE); }
-        else {
-            showCommentbtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(context, itemComment, Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-
         displayWidthAndColor();
 
         itemDate = view.findViewById(R.id.item_date);
@@ -119,6 +109,19 @@ public class HistoryAdapter extends BaseAdapter {
                 break;
             default:
                 break;
+        }
+
+        if (itemComment.isEmpty()) {
+            showCommentbtn.setEnabled(false);
+            showCommentbtn.setImageAlpha(0);
+        }
+        else {
+            showCommentbtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(context, itemComment, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
         return view;

@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
     private String mComment;
     private Calendar mCalendar;
     private SimpleDateFormat mSimpleDateFormat;
+    private Type listType;
 
     public static final String PREF_KEY_POSITION = "PREF_KEY_POSITION";
     public static final String PREF_KEY_COMMENT = "PREF_KEY_COMMENT";
@@ -60,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         mMoods[2] = new Mood("Normal", "");
         mMoods[3] = new Mood("Happy", "");
         mMoods[4] = new Mood("Very Happy","");
+
+        listType = new TypeToken<ArrayList<Mood>>(){}.getType();
 
         mPreferences = getPreferences(MODE_PRIVATE);
 
@@ -114,7 +117,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         }
         else if (btnTag == 20) {
             // Start history activity
+            getSavedMoods();
+            String listStr = new Gson().toJson(mSavedMoods, listType);
             Intent i = new Intent(this, HistoryActivity.class);
+            i.putExtra("list", listStr);
             startActivity(i);
         } else {
             // Share mood with somebody
@@ -175,11 +181,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
 
         Mood currentMood = new Mood(mMoods[mCurrentPosition].getName(), mComment);
 
-        String strList = mPreferences.getString(PREF_KEY_LIST, "");
-        Type listType = new TypeToken<ArrayList<Mood>>(){}.getType();
-
-        if (strList.isEmpty()) {mSavedMoods = new ArrayList<>(7);}
-        else { mSavedMoods = new Gson().fromJson(strList, listType); }
+        getSavedMoods();
 
         mSavedMoods.add(currentMood);
 
@@ -188,9 +190,16 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         }
 
         String listStr = new Gson().toJson(mSavedMoods, listType);
-
         mPreferences.edit().putString(PREF_KEY_LIST, listStr).apply();
 
+    }
+
+    private void getSavedMoods() {
+
+        String strList = mPreferences.getString(PREF_KEY_LIST, "");
+
+        if (strList.isEmpty()) {mSavedMoods = new ArrayList<>(7);}
+        else { mSavedMoods = new Gson().fromJson(strList, listType); }
     }
 
 }
