@@ -8,10 +8,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -21,32 +19,28 @@ import com.manum.android.moodtracker.Models.Mood;
 import com.manum.android.moodtracker.R;
 import com.manum.android.moodtracker.Adapters.VerticalViewPager;
 
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.joda.time.MutableDateTime;
+
 import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements MainFragment.OnButtonClickedListener {
 
     private Mood[] mMoods;
     private List<Mood> mSavedMoods;
     private int mCurrentPosition;
-    private String mCurrentDate;
-    private String mStringDate;
+    private int mDaysSinceLastUse;
     private SharedPreferences mPreferences;
     private VerticalViewPager mPager;
     private String mComment;
-    private Calendar mCalendar;
-    private SimpleDateFormat mSimpleDateFormat;
-    private Type listType;
+    private Type mListType;
 
     public static final String PREF_KEY_POSITION = "PREF_KEY_POSITION";
     public static final String PREF_KEY_COMMENT = "PREF_KEY_COMMENT";
-    public static final String PREF_KEY_DATE = "PREF_KEY_DATE";
+    public static final String PREF_KEY_DAYS = "PREF_KEY_DAYS";
     public static final String PREF_KEY_LIST = "PREF_KEY_LIST";
 
     @Override
@@ -62,24 +56,16 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         mMoods[3] = new Mood("Happy", "");
         mMoods[4] = new Mood("Very Happy","");
 
-        listType = new TypeToken<ArrayList<Mood>>(){}.getType();
+        mListType = new TypeToken<ArrayList<Mood>>(){}.getType();
 
         mPreferences = getPreferences(MODE_PRIVATE);
-
-
-        // If day has changed, store the last mood into history list and show default settings
-        /*if(compareDates()) {
-            mCurrentPosition = mPreferences.getInt(PREF_KEY_POSITION, 3);
-            mComment = mPreferences.getString(PREF_KEY_COMMENT, "No comment");
-        } else {
-            if (!mStringDate.equals("No date")){ addMoodToHistoryList(); }
-            mCurrentPosition = 3;
-            mComment = "";
-        }*/
         mCurrentPosition = mPreferences.getInt(PREF_KEY_POSITION, 3);
-        mComment = mPreferences.getString(PREF_KEY_COMMENT, "No comment");
-        if (!compareDates()) {
-            if (!mStringDate.equals("No date")) {addMoodToHistoryList();}
+        mComment = mPreferences.getString(PREF_KEY_COMMENT, "");
+
+        mDaysSinceLastUse = daysCounter();
+
+        if (mDaysSinceLastUse > 0) {
+            addMoodToHistoryList();
             mCurrentPosition = 3;
             mComment = "";
         }
@@ -89,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         this.configureViewPager();
     }
 
-    // Save current mood and date when activity is onStop()
+    // Save current mood and comment when activity is onStop()
     @Override
     protected void onStop() {
         super.onStop();
@@ -118,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         else if (btnTag == 20) {
             // Start history activity
             getSavedMoods();
-            String listStr = new Gson().toJson(mSavedMoods, listType);
+            String listStr = new Gson().toJson(mSavedMoods, mListType);
             Intent i = new Intent(this, HistoryActivity.class);
             i.putExtra("list", listStr);
             startActivity(i);
@@ -162,21 +148,26 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         builder.show();
     }
 
-    // Compare date stored in preferences and current date
-    private boolean compareDates() {
+    // If this is the first time app is running, return -1
+    // Otherwise return the number of days since the last time app was launched
+    private int daysCounter() {
 
-        mStringDate = mPreferences.getString(PREF_KEY_DATE, "No date");
+        int prefDaysSinceEpoch = mPreferences.getInt(PREF_KEY_DAYS, 0);
 
-        mCalendar = Calendar.getInstance();
-        mSimpleDateFormat = new SimpleDateFormat("yyyy/MM/dd", Locale.FRANCE);
-        mCurrentDate = mSimpleDateFormat.format(mCalendar.getTime());
+        // Get days between epoch and now
+        MutableDateTime epoch = new MutableDateTime();
+        epoch.setDate(0);
+        DateTime now = new DateTime();
+        int daysSinceEpoch = Days.daysBetween(epoch, now).getDays();
 
-        mPreferences.edit().putString(PREF_KEY_DATE, mCurrentDate).apply();
+        mPreferences.edit().putInt(PREF_KEY_DAYS, daysSinceEpoch).apply();
 
-        return mStringDate.equals((mCurrentDate));
+        if (prefDaysSinceEpoch == 0) { return -1; }
+        else { return (daysSinceEpoch - prefDaysSinceEpoch); }
     }
 
-    // Add last mood to the history list
+
+    // Add last mood to the history list, eventually add the absent moods
     private void addMoodToHistoryList() {
 
         Mood currentMood = new Mood(mMoods[mCurrentPosition].getName(), mComment);
@@ -184,14 +175,16 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         getSavedMoods();
 
         mSavedMoods.add(currentMood);
+        if (mSavedMoods.size()>7){ mSavedMoods.remove(0); }
 
-        if (mSavedMoods.size()>7){
-            mSavedMoods.remove(0);
+        if (mDaysSinceLastUse > 1) {
+            for (int i = 0; i < mDaysSinceLastUse-1; i++) {
+                mSavedMoods.add(new Mood("Absent", "Vous n'avez pas ouvert l'application ce jour"));
+                if (mSavedMoods.size() > 7) { mSavedMoods.remove(0); }
+            }
         }
-
-        String listStr = new Gson().toJson(mSavedMoods, listType);
+        String listStr = new Gson().toJson(mSavedMoods, mListType);
         mPreferences.edit().putString(PREF_KEY_LIST, listStr).apply();
-
     }
 
     private void getSavedMoods() {
@@ -199,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         String strList = mPreferences.getString(PREF_KEY_LIST, "");
 
         if (strList.isEmpty()) {mSavedMoods = new ArrayList<>(7);}
-        else { mSavedMoods = new Gson().fromJson(strList, listType); }
+        else { mSavedMoods = new Gson().fromJson(strList, mListType); }
     }
 
 }

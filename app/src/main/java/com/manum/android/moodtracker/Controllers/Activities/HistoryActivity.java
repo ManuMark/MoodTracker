@@ -4,6 +4,7 @@ package com.manum.android.moodtracker.Controllers.Activities;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -24,6 +25,8 @@ import java.util.List;
 public class HistoryActivity extends AppCompatActivity {
 
     private List<Mood> mSavedMoods;
+    private LinearLayout historyLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +51,11 @@ public class HistoryActivity extends AppCompatActivity {
         mSavedMoods.add(new Mood("Happy", ""));
         mSavedMoods.add(new Mood("Very Happy", "la vie"));
         mSavedMoods.add(new Mood("Normal", ""));*/
+
+
+        //historyLayout = findViewById(R.id.history_layout);
+        //int height = historyLayout.getHeight();
+
 
         // Get listView and set Adapter
         ListView mMoodList = findViewById(R.id.list_moods);
