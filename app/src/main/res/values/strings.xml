@@ -9,4 +9,12 @@
     <string name="check_note_btn">Check add button</string>
     <string name="share_btn">Share Button</string>
     <string name="date_de_l_humeur">Date de l\'humeur</string>
+
+    <string name="week">Il y a une semaine</string>
+    <string name="six_days">Il y a six jours</string>
+    <string name="five_days">Il y a cinq jours</string>
+    <string name="four_days">Il y a quatre jours</string>
+    <string name="three_days">Il y a trois jours</string>
+    <string name="two_days">Avant-hier</string>
+    <string name="one_day">Hier</string>
 </resources>

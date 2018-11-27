@@ -23,9 +23,6 @@ public class MyAdapter extends FragmentPagerAdapter {
         return moods.length;
     }
 
-    public Fragment getItem(int position) {
-
-        return (MainFragment.newInstance(this.moods[position]));
-    }
+    public Fragment getItem(int position) { return (MainFragment.newInstance(this.moods[position])); }
 
 }

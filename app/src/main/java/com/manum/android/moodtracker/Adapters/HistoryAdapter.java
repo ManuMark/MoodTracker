@@ -1,20 +1,16 @@
 package com.manum.android.moodtracker.Adapters;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Point;
-import android.graphics.Rect;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,14 +29,7 @@ public class HistoryAdapter extends BaseAdapter {
     private List<Mood> moodList;
     private LayoutInflater inflater;
 
-    private String itemName;
-    private LinearLayout itemLine;
-    private TextView itemDate;
-
-    private int width;
-    private int height;
-
-     // Constructor
+    // Constructor
     public HistoryAdapter(Context context, List<Mood> moodList) {
         this.context = context;
         this.moodList = moodList;
@@ -67,103 +56,85 @@ public class HistoryAdapter extends BaseAdapter {
 
         view = inflater.inflate(R.layout.history_adapter_item, null);
 
-
-        // Get screen size
+        // Get screen and bar status size
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
 
         int statusBarHeight = getStatusBarHeight();
+        int width = size.x;
+        int height = size.y - statusBarHeight;
 
-        width = size.x;
-        height = size.y - statusBarHeight;
-
-
-        // get informations about item
+        // Get information about item
         Mood currentItem = getItem(i);
-        itemName = currentItem.getName();
+        String itemColor = currentItem.getColor();
+        int itemWidth = currentItem.getWidth();
         final String itemComment = currentItem.getComment();
 
-        itemLine = view.findViewById(R.id.item_line);
-        ImageButton showCommentbtn = view.findViewById(R.id.item_icon);
+        // Set color and size of item
+        LinearLayout itemLine = view.findViewById(R.id.item_line);
+        Resources resources = context.getResources();
+        int resId = resources.getIdentifier(itemColor, "color", context.getPackageName());
+        int newColor = resources.getColor(resId);
+        itemLine.setBackgroundColor(newColor);
+        itemLine.setLayoutParams(new LinearLayout.LayoutParams(((width/5)*itemWidth), height / moodList.size()));
 
-        displayWidthAndColor();
+        // Set date and comment of item
+        setItemDate(i, view);
+        setItemComment(itemComment, view);
 
-        itemDate = view.findViewById(R.id.item_date);
+        return view;
+    }
+
+    // Date of item
+    private void setItemDate(int i, View view){
+        TextView itemDate = view.findViewById(R.id.item_date);
         switch (i) {
             case 0:
-                itemDate.setText("Il y a une semaine");
+                itemDate.setText(R.string.week);
                 break;
             case 1:
-                itemDate.setText("Il y a six jours");
+                itemDate.setText(R.string.six_days);
                 break;
             case 2:
-                itemDate.setText("Il y a cinq jours");
+                itemDate.setText(R.string.five_days);
                 break;
             case 3:
-                itemDate.setText("Il y a quatre jours");
+                itemDate.setText(R.string.four_days);
                 break;
             case 4:
-                itemDate.setText("Il y a trois jours");
+                itemDate.setText(R.string.three_days);
                 break;
             case 5:
-                itemDate.setText("Avant-hier");
+                itemDate.setText(R.string.two_days);
                 break;
             case 6:
-                itemDate.setText("Hier");
+                itemDate.setText(R.string.one_day);
                 break;
             default:
                 break;
         }
+    }
 
+    // Comment of item
+    private void setItemComment(final String itemComment, View view){
+        ImageButton showCommentBtn = view.findViewById(R.id.item_icon);
         if (itemComment.isEmpty()) {
-            showCommentbtn.setEnabled(false);
-            showCommentbtn.setImageAlpha(0);
+            showCommentBtn.setEnabled(false);
+            showCommentBtn.setImageAlpha(0);
         }
         else {
-            showCommentbtn.setOnClickListener(new View.OnClickListener() {
+            showCommentBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Toast.makeText(context, itemComment, Toast.LENGTH_SHORT).show();
                 }
             });
         }
-
-        return view;
     }
 
-    private void displayWidthAndColor() {
-        switch (itemName) {
-            case "Sad":
-                itemLine.setBackgroundColor(context.getResources().getColor(R.color.faded_red));
-                itemLine.setLayoutParams(new LinearLayout.LayoutParams((width/5), height / moodList.size()));
-                break;
-            case "Disappointed":
-                itemLine.setBackgroundColor(context.getResources().getColor(R.color.warm_grey));
-                itemLine.setLayoutParams(new LinearLayout.LayoutParams((width/5)*2, height / moodList.size()));
-                break;
-            case "Normal":
-                itemLine.setBackgroundColor(context.getResources().getColor(R.color.cornflower_blue_65));
-                itemLine.setLayoutParams(new LinearLayout.LayoutParams((width/5)*3, height / moodList.size()));
-                break;
-            case "Happy":
-                itemLine.setBackgroundColor(context.getResources().getColor(R.color.light_sage));
-                itemLine.setLayoutParams(new LinearLayout.LayoutParams((width/5)*4, height / moodList.size()));
-                break;
-            case "Very Happy":
-                itemLine.setBackgroundColor(context.getResources().getColor(R.color.banana_yellow));
-                itemLine.setLayoutParams(new LinearLayout.LayoutParams(width, height / moodList.size()));
-                break;
-            case "Absent":
-                itemLine.setBackgroundColor(context.getResources().getColor(R.color.history_background));
-                itemLine.setLayoutParams(new LinearLayout.LayoutParams(width/2, height / moodList.size()));
-                break;
-            default:
-                break;
-        }
-    }
-
+    // Get height of status bar
     private int getStatusBarHeight() {
         int result = 0;
         int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");

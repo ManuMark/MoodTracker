@@ -7,24 +7,27 @@ public class Mood {
 
     private String name;
     private String comment;
+    private String color;
+    private int width;
 
-    public Mood(String name, String comment) {
+    // Constructor
+    public Mood(String name, String color, String comment, int width) {
 
         this.name = name;
+        this.color = color;
         this.comment = comment;
+        this.width = width;
     }
 
+    // Getters
     public String getName() {
         return name;
     }
 
-    public String getComment() {
+    public String getComment() { return comment; }
 
-        return comment;
-    }
+    public String getColor() { return color; }
 
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
+    public int getWidth() { return width; }
 
 }

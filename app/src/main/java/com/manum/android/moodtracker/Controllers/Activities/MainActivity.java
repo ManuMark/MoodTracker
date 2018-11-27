@@ -35,8 +35,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
     private int mDaysSinceLastUse;
     private SharedPreferences mPreferences;
     private VerticalViewPager mPager;
-    private String mComment;
     private Type mListType;
+    private String mComment;
 
     public static final String PREF_KEY_POSITION = "PREF_KEY_POSITION";
     public static final String PREF_KEY_COMMENT = "PREF_KEY_COMMENT";
@@ -50,20 +50,22 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
 
         // Create Mood[]
         mMoods = new Mood[5];
-        mMoods[0] = new Mood("Sad", "");
-        mMoods[1] = new Mood("Disappointed", "");
-        mMoods[2] = new Mood("Normal", "");
-        mMoods[3] = new Mood("Happy", "");
-        mMoods[4] = new Mood("Very Happy","");
+        mMoods[0] = new Mood("Sad", "faded_red", "", 1);
+        mMoods[1] = new Mood("Disappointed", "warm_grey",  "", 2);
+        mMoods[2] = new Mood("Normal", "cornflower_blue_65","", 3);
+        mMoods[3] = new Mood("Happy", "light_sage","", 4);
+        mMoods[4] = new Mood("Very Happy","banana_yellow","", 5);
 
+        // Create ListType to store saved moods
         mListType = new TypeToken<ArrayList<Mood>>(){}.getType();
 
+        // Get preferences and stored data
         mPreferences = getPreferences(MODE_PRIVATE);
         mCurrentPosition = mPreferences.getInt(PREF_KEY_POSITION, 3);
         mComment = mPreferences.getString(PREF_KEY_COMMENT, "");
 
+        // If the date has changed, add past mood to the saved moods
         mDaysSinceLastUse = daysCounter();
-
         if (mDaysSinceLastUse > 0) {
             addMoodToHistoryList();
             mCurrentPosition = 3;
@@ -80,8 +82,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
     protected void onStop() {
         super.onStop();
 
-        int mSavedPosition = mPager.getCurrentItem();
-        mPreferences.edit().putInt(PREF_KEY_POSITION, mSavedPosition).apply();
+        int position = mPager.getCurrentItem();
+        mPreferences.edit().putInt(PREF_KEY_POSITION, position).apply();
         mPreferences.edit().putString(PREF_KEY_COMMENT, mComment).apply();
     }
 
@@ -166,20 +168,19 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         else { return (daysSinceEpoch - prefDaysSinceEpoch); }
     }
 
-
     // Add last mood to the history list, eventually add the absent moods
     private void addMoodToHistoryList() {
 
-        Mood currentMood = new Mood(mMoods[mCurrentPosition].getName(), mComment);
+        Mood pastMood = new Mood(mMoods[mCurrentPosition].getName(), mMoods[mCurrentPosition].getColor(), mComment, mMoods[mCurrentPosition].getWidth());
 
         getSavedMoods();
 
-        mSavedMoods.add(currentMood);
+        mSavedMoods.add(pastMood);
         if (mSavedMoods.size()>7){ mSavedMoods.remove(0); }
 
         if (mDaysSinceLastUse > 1) {
             for (int i = 0; i < mDaysSinceLastUse-1; i++) {
-                mSavedMoods.add(new Mood("Absent", "Vous n'avez pas ouvert l'application ce jour"));
+                mSavedMoods.add(new Mood("Absent", "history_background","Vous n'avez pas ouvert l'application ce jour", 5));
                 if (mSavedMoods.size() > 7) { mSavedMoods.remove(0); }
             }
         }
@@ -187,11 +188,17 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
         mPreferences.edit().putString(PREF_KEY_LIST, listStr).apply();
     }
 
+    // Get list of saved moods, or create a new one if there is none
     private void getSavedMoods() {
 
         String strList = mPreferences.getString(PREF_KEY_LIST, "");
 
-        if (strList.isEmpty()) {mSavedMoods = new ArrayList<>(7);}
+        if (strList.isEmpty()) {
+            mSavedMoods = new ArrayList<>(7);
+            for (int i=0; i<7; i++){
+                mSavedMoods.add(new Mood("Empty", "history_background", "", 0));
+            }
+        }
         else { mSavedMoods = new Gson().fromJson(strList, mListType); }
     }
 
