@@ -1,8 +1,8 @@
 package com.manum.android.moodtracker.Adapters;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Point;
+import android.support.annotation.NonNull;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -74,10 +74,8 @@ public class HistoryAdapter extends BaseAdapter {
 
         // Set color and size of item
         LinearLayout itemLine = view.findViewById(R.id.item_line);
-        Resources resources = context.getResources();
-        int resId = resources.getIdentifier(itemColor, "color", context.getPackageName());
-        int newColor = resources.getColor(resId);
-        itemLine.setBackgroundColor(newColor);
+        int resId = context.getResources().getIdentifier(itemColor, "color", context.getPackageName());
+        itemLine.setBackgroundColor(context.getResources().getColor(resId));
         itemLine.setLayoutParams(new LinearLayout.LayoutParams(((width/5)*itemWidth), height / moodList.size()));
 
         // Set date and comment of item
@@ -90,31 +88,9 @@ public class HistoryAdapter extends BaseAdapter {
     // Date of item
     private void setItemDate(int i, View view){
         TextView itemDate = view.findViewById(R.id.item_date);
-        switch (i) {
-            case 0:
-                itemDate.setText(R.string.week);
-                break;
-            case 1:
-                itemDate.setText(R.string.six_days);
-                break;
-            case 2:
-                itemDate.setText(R.string.five_days);
-                break;
-            case 3:
-                itemDate.setText(R.string.four_days);
-                break;
-            case 4:
-                itemDate.setText(R.string.three_days);
-                break;
-            case 5:
-                itemDate.setText(R.string.two_days);
-                break;
-            case 6:
-                itemDate.setText(R.string.one_day);
-                break;
-            default:
-                break;
-        }
+        String resourceName = "str_date_"+i;
+        int resId = context.getResources().getIdentifier(resourceName, "string", context.getPackageName());
+        itemDate.setText(resId);
     }
 
     // Comment of item

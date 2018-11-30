@@ -8,16 +8,20 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import com.manum.android.moodtracker.Models.Mood;
 import com.manum.android.moodtracker.R;
 
 public class MainFragment extends Fragment implements View.OnClickListener{
 
-    // Create key for Bundle
-    private static final String MY_MOOD_KEY = "mood";
+    // Create keys for Bundle
+    private static final String MOOD_COLOR_KEY = "mood_color";
+    public static final String MOOD_IMAGE_KEY = "mood_image";
 
-    private String mString;
+    private String mStringColor;
+    private String mStringImage;
     private OnButtonClickedListener mCallback;
 
     public interface OnButtonClickedListener {
@@ -29,7 +33,8 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
         MainFragment frag = new MainFragment();
         Bundle args = new Bundle();
-        args.putString(MY_MOOD_KEY, mood.getName());
+        args.putString(MOOD_COLOR_KEY, mood.getColor());
+        args.putString(MOOD_IMAGE_KEY, mood.getName());
         frag.setArguments(args);
         return frag;
     }
@@ -37,33 +42,28 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mString = getArguments() != null ? getArguments().getString(MY_MOOD_KEY) : "Null";
+        mStringColor = getArguments() != null ? getArguments().getString(MOOD_COLOR_KEY) : "Null";
+        mStringImage = getArguments() != null ? getArguments().getString(MOOD_IMAGE_KEY) : "Null";
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v;
-        // Display layout considering MY_MOOD_KEY
-        switch (mString) {
-            case "Sad":
-                v = inflater.inflate(R.layout.fragment_sad, container, false);
-                break;
-            case "Disappointed":
-                v = inflater.inflate(R.layout.fragment_disappointed, container, false);
-                break;
-            case "Normal":
-                v = inflater.inflate(R.layout.fragment_normal, container, false);
-                break;
-            case "Happy":
-                v = inflater.inflate(R.layout.fragment_happy, container, false);
-                break;
-            case "Very Happy":
-                v = inflater.inflate(R.layout.fragment_very_happy, container, false);
-                break;
-            default:
-                return null;
-        }
+
+        // Display layout considering bundle keys
+
+        v = inflater.inflate(R.layout.fragment_main, container, false);
+        RelativeLayout fragmentLayout = v.findViewById(R.id.main_fragment_layout);
+        ImageView fragmentImage = v.findViewById(R.id.main_fragment_image);
+
+        int resIdColor = getContext().getResources().getIdentifier(mStringColor, "color", getContext().getPackageName());
+        fragmentLayout.setBackgroundColor(getContext().getResources().getColor(resIdColor));
+
+        String resourceName = "smiley_"+mStringImage;
+        int resIdImage = getContext().getResources().getIdentifier(resourceName, "drawable", getContext().getPackageName());
+        fragmentImage.setImageResource(resIdImage);
+
         v.findViewById(R.id.note_add_btn).setOnClickListener(this);
         v.findViewById(R.id.history_btn).setOnClickListener(this);
         v.findViewById(R.id.share_btn).setOnClickListener(this);

@@ -50,11 +50,11 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnBu
 
         // Create Mood[]
         mMoods = new Mood[5];
-        mMoods[0] = new Mood("Sad", "faded_red", "", 1);
-        mMoods[1] = new Mood("Disappointed", "warm_grey",  "", 2);
-        mMoods[2] = new Mood("Normal", "cornflower_blue_65","", 3);
-        mMoods[3] = new Mood("Happy", "light_sage","", 4);
-        mMoods[4] = new Mood("Very Happy","banana_yellow","", 5);
+        mMoods[0] = new Mood("sad", "faded_red", "", 1);
+        mMoods[1] = new Mood("disappointed", "warm_grey",  "", 2);
+        mMoods[2] = new Mood("normal", "cornflower_blue_65","", 3);
+        mMoods[3] = new Mood("happy", "light_sage","", 4);
+        mMoods[4] = new Mood("super_happy","banana_yellow","", 5);
 
         // Create ListType to store saved moods
         mListType = new TypeToken<ArrayList<Mood>>(){}.getType();
